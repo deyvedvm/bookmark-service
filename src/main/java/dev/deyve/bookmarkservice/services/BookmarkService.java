@@ -53,6 +53,8 @@ public class BookmarkService {
 
     /**
      * Find Bookmarks
+     *
+     * @return List of Bookmark
      */
     public List<Bookmark> findBookmarks() {
 
@@ -65,6 +67,9 @@ public class BookmarkService {
 
     /**
      * Find Bookmarks with Pageable
+     *
+     * @param pageable Pageable
+     * @return Page of Bookmark
      */
     public Page<Bookmark> findBookmarks(Pageable pageable) {
 
@@ -75,4 +80,17 @@ public class BookmarkService {
         return bookmarks;
     }
 
+    /**
+     * Delete Bookmark
+     *
+     * @param id String
+     */
+    public void deleteBookmark(String id) {
+
+        try {
+            bookmarkRepository.deleteById(id);
+        } catch (Exception e) {
+            logger.error("Error: {}", e.getMessage());
+        }
+    }
 }

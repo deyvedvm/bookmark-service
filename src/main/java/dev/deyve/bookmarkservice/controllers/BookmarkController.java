@@ -67,6 +67,14 @@ public class BookmarkController {
         return ResponseEntity.ok().body(getResponseMap(bookmarks, bookmarkDTOS));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBookmark(@PathVariable String id) {
+
+        bookmarkService.deleteBookmark(id);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     private List<BookmarkDTO> mapToBookmarkDTOS(Page<Bookmark> bookmarks) {
         return bookmarks.stream()
                 .map(bookmark -> BookmarkDTO.builder()
