@@ -67,6 +67,20 @@ public class BookmarkController {
         return ResponseEntity.ok().body(getResponseMap(bookmarks, bookmarkDTOS));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Bookmark> getBookmark(@PathVariable String id) {
+
+        logger.debug("BOOKMARK_SERVICE - Id: {}", id);
+
+        Bookmark bookmark = bookmarkService.getBookmark(id);
+
+        return ResponseEntity.ok().body(bookmark);
+    }
+
+    /**
+     * @param id String
+     * @return Void
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBookmark(@PathVariable String id) {
 

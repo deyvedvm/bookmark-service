@@ -1,6 +1,7 @@
 package dev.deyve.bookmarkservice.services;
 
 import dev.deyve.bookmarkservice.dtos.TabsDTO;
+import dev.deyve.bookmarkservice.exceptions.BookmarkNotFoundException;
 import dev.deyve.bookmarkservice.models.Bookmark;
 import dev.deyve.bookmarkservice.repositories.BookmarkRepository;
 import org.apache.logging.log4j.LogManager;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Bookmark Service
@@ -78,6 +80,22 @@ public class BookmarkService {
         logger.debug("BOOKMARK_SERVICE - Bookmarks founded: {} ", bookmarks);
 
         return bookmarks;
+    }
+
+    /**
+     * @param id String
+     * @return Bookmark
+     * @throws BookmarkNotFoundException Bookmark Not Found Exception
+     */
+    public Bookmark getBookmark(String id) throws BookmarkNotFoundException {
+
+        Optional<Bookmark> optionalBookmark = bookmarkRepository.findById(id);
+
+        if (optionalBookmark.isPresent()) {
+            return optionalBookmark.get();
+        } else {
+            throw new BookmarkNotFoundException("Bookmark Not Found!");
+        }
     }
 
     /**
