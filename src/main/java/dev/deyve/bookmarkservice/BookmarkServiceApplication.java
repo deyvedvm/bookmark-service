@@ -15,6 +15,8 @@ public class BookmarkServiceApplication {
 
     private static final Logger logger = LoggerFactory.getLogger(BookmarkServiceApplication.class);
 
+    private static final String SERVER_SERVLET_CONTEXT_PATH = "server.servlet.context-path";
+
     public static void main(String[] args) {
         ConfigurableApplicationContext configurableApplicationContext = SpringApplication.run(BookmarkServiceApplication.class, args);
 
@@ -69,10 +71,10 @@ public class BookmarkServiceApplication {
     }
 
     private static String getContextPath(ConfigurableEnvironment environment) {
-        if (environment.getProperty("server.servlet.context-path") == null || Objects.requireNonNull(environment.getProperty("server.servlet.context-path")).isEmpty()) {
+        if (environment.getProperty(SERVER_SERVLET_CONTEXT_PATH) == null || Objects.requireNonNull(environment.getProperty(SERVER_SERVLET_CONTEXT_PATH)).isEmpty()) {
             return "/";
         } else {
-            return environment.getProperty("server.servlet.context-path");
+            return environment.getProperty(SERVER_SERVLET_CONTEXT_PATH);
         }
     }
 }
