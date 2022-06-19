@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="BookmarkServiceApplication [DEV]" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <option name="ACTIVE_PROFILES" />
+    <envs>
+      <env name="PORT" value="8080" />
+      <env name="MONGODB_URI" value="mongodb+srv://bookmarks:Fl4yeW5UAK95zfhT@dvm-cluster.aj4bx.mongodb.net/bookmark-service-dev?retryWrites=true&amp;w=majority" />
+    </envs>
+    <module name="bookmark-service" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="dev.deyve.bookmarkservice.BookmarkServiceApplication" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
