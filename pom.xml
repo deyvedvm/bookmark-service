@@ -36,10 +36,10 @@
 		</dependency>
 
 		<!-- Spring Boot Starter Batch -->
-		<!--<dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-batch</artifactId>
-		</dependency>-->
+		</dependency>
 
 		<!-- Spring Boot Starter Data MongoDB -->
 		<dependency>
@@ -95,12 +95,18 @@
 			<scope>test</scope>
 		</dependency>-->
 
+		<!-- H2 Database -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+		</dependency>
+
 		<!-- Spring Boot Bath Test -->
-		<!--<dependency>
+		<dependency>
 			<groupId>org.springframework.batch</groupId>
 			<artifactId>spring-batch-test</artifactId>
 			<scope>test</scope>
-		</dependency>-->
+		</dependency>
 
 		<!-- TestContainers -->
 		<dependency>
