@@ -72,7 +72,7 @@ public class BookmarkController {
 
         logger.debug("BOOKMARK_SERVICE - Id: {}", id);
 
-        Bookmark bookmark = bookmarkService.getBookmark(id);
+        Bookmark bookmark = bookmarkService.findBookmark(id);
 
         return ResponseEntity.ok().body(bookmark);
     }

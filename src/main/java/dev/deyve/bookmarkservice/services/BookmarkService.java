@@ -2,6 +2,7 @@ package dev.deyve.bookmarkservice.services;
 
 import dev.deyve.bookmarkservice.dtos.TabsDTO;
 import dev.deyve.bookmarkservice.exceptions.BookmarkNotFoundException;
+import dev.deyve.bookmarkservice.exceptions.BusinessException;
 import dev.deyve.bookmarkservice.models.Bookmark;
 import dev.deyve.bookmarkservice.repositories.BookmarkRepository;
 import org.apache.logging.log4j.LogManager;
@@ -49,7 +50,8 @@ public class BookmarkService {
             bookmarkRepository.saveAll(bookmarks);
             logger.info("Tabs saved!");
         } catch (Exception e) {
-            logger.error("Error: {}", e.getMessage());
+            logger.error("BOOKMARK_SERVICE - Error: {}", e.getMessage());
+            throw new BusinessException(e.getMessage());
         }
     }
 
@@ -87,7 +89,7 @@ public class BookmarkService {
      * @return Bookmark
      * @throws BookmarkNotFoundException Bookmark Not Found Exception
      */
-    public Bookmark getBookmark(String id) throws BookmarkNotFoundException {
+    public Bookmark findBookmark(String id) {
 
         Optional<Bookmark> optionalBookmark = bookmarkRepository.findById(id);
 
@@ -108,7 +110,8 @@ public class BookmarkService {
         try {
             bookmarkRepository.deleteById(id);
         } catch (Exception e) {
-            logger.error("Error: {}", e.getMessage());
+            logger.error("BOOKMARK_SERVICE - Error: {}", e.getMessage());
+            throw new BusinessException(e.getMessage());
         }
     }
 }
