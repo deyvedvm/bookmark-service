@@ -101,17 +101,19 @@ public class BookmarkService {
     }
 
     /**
-     * Delete Bookmark
+     * Delete Bookmark by Id
      *
      * @param id String
      */
     public void deleteBookmark(String id) {
 
-        try {
+        Optional<Bookmark> optionalBookmark = bookmarkRepository.findById(id);
+
+        if (optionalBookmark.isPresent()) {
             bookmarkRepository.deleteById(id);
-        } catch (Exception e) {
-            logger.error("BOOKMARK_SERVICE - Error: {}", e.getMessage());
-            throw new BusinessException(e.getMessage());
+            logger.info("BOOKMARK_SERVICE - Bookmark deleted");
+        } else {
+            throw new BookmarkNotFoundException("Bookmark Not Found!");
         }
     }
 }

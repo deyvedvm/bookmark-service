@@ -139,6 +139,8 @@ class BookmarkServiceTest {
     @Test
     @DisplayName("Should delete a bookmark by Id")
     void shouldDeleteBookmarkById() {
+        when(bookmarkRepository.findById(id)).thenReturn(Optional.ofNullable(bookmark));
+
         bookmarkService.deleteBookmark(id);
 
         verify(bookmarkRepository, times(1)).deleteById(id);
@@ -147,11 +149,12 @@ class BookmarkServiceTest {
     @Test
     @DisplayName("Should throw BookmarkNotFoundException when delete a bookmark by Id")
     void shouldThrowBookmarkNotFoundExceptionWhenDeleteBookmarkById() {
-        doThrow(new BusinessException("Error when delete bookmark")).when(bookmarkRepository).deleteById(idFail);
+        when(bookmarkRepository.findById(idFail)).thenReturn(Optional.ofNullable(any()));
 
-        Exception exception = assertThrows(BusinessException.class,
-                () -> bookmarkService.deleteBookmark(idFail));
-
-        assertEquals("Error when delete bookmark", exception.getMessage());
+        try {
+            bookmarkService.deleteBookmark(idFail);
+        } catch (Exception e) {
+            assertEquals("Bookmark Not Found!", e.getMessage());
+        }
     }
 }
