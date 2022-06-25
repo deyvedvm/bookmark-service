@@ -42,8 +42,6 @@ public class BookmarkController {
     @RequestMapping("/tabs")
     public ResponseEntity<Void> postTabs(@RequestBody TabsDTO tabsDTO) {
 
-        logger.debug("BOOKMARK_SERVICE - TabsDTO: {}", tabsDTO);
-
         bookmarkService.saveTabs(tabsDTO);
 
         return new ResponseEntity<>(HttpStatus.OK);
@@ -58,19 +56,17 @@ public class BookmarkController {
     public ResponseEntity<Map<String, Object>> getBookmarks(@RequestParam(defaultValue = "0") int page,
                                                             @RequestParam(defaultValue = "5") int size) {
 
+        logger.info("Find bookmarks by page: {} and size: {}", page, size);
+
         Page<Bookmark> bookmarks = bookmarkService.findBookmarks(PageRequest.of(page, size));
 
         List<BookmarkDTO> bookmarkDTOS = mapToBookmarkDTOS(bookmarks);
-
-        logger.debug("BOOKMARK_SERVICE - bookmarkDTOS: {}", bookmarkDTOS);
 
         return ResponseEntity.ok().body(getResponseMap(bookmarks, bookmarkDTOS));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Bookmark> getBookmark(@PathVariable String id) {
-
-        logger.debug("BOOKMARK_SERVICE - Id: {}", id);
 
         Bookmark bookmark = bookmarkService.findBookmark(id);
 

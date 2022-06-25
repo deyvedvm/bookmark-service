@@ -47,8 +47,8 @@ public class BookmarkService {
                 ).toList();
 
         try {
-            bookmarkRepository.saveAll(bookmarks);
-            logger.info("Tabs saved!");
+            List<Bookmark> bookmarksSaved = bookmarkRepository.saveAll(bookmarks);
+            logInfo("Tabs saved!", bookmarksSaved);
         } catch (Exception e) {
             logger.error("BOOKMARK_SERVICE - Error: {}", e.getMessage());
             throw new BusinessException(e.getMessage());
@@ -64,7 +64,7 @@ public class BookmarkService {
 
         List<Bookmark> bookmarks = bookmarkRepository.findAll();
 
-        logger.debug("BOOKMARK_SERVICE - Bookmarks founded: {} ", bookmarks);
+        logInfo("Bookmarks founded!", bookmarks);
 
         return bookmarks;
     }
@@ -79,7 +79,7 @@ public class BookmarkService {
 
         Page<Bookmark> bookmarks = bookmarkRepository.findAll(pageable);
 
-        logger.debug("BOOKMARK_SERVICE - Bookmarks founded: {} ", bookmarks);
+        logInfo("Bookmarks founded!", bookmarks);
 
         return bookmarks;
     }
@@ -91,9 +91,12 @@ public class BookmarkService {
      */
     public Bookmark findBookmark(String id) {
 
+        logger.info("BOOKMARK_SERVICE - Find bookmark by Id: {} ", id);
+
         Optional<Bookmark> optionalBookmark = bookmarkRepository.findById(id);
 
         if (optionalBookmark.isPresent()) {
+            logInfo("Bookmark founded!", optionalBookmark.get());
             return optionalBookmark.get();
         } else {
             throw new BookmarkNotFoundException("Bookmark Not Found!");
@@ -107,13 +110,20 @@ public class BookmarkService {
      */
     public void deleteBookmark(String id) {
 
+        logger.info("BOOKMARK_SERVICE - Delete bookmark by Id: {} ", id);
+
         Optional<Bookmark> optionalBookmark = bookmarkRepository.findById(id);
 
         if (optionalBookmark.isPresent()) {
             bookmarkRepository.deleteById(id);
-            logger.info("BOOKMARK_SERVICE - Bookmark deleted");
+            logInfo("Bookmark deleted!", optionalBookmark.get());
         } else {
             throw new BookmarkNotFoundException("Bookmark Not Found!");
         }
+    }
+
+    private void logInfo(String message, Object o) {
+        logger.info("BOOKMARK_SERVICE - {}", message);
+        logger.debug("BOOKMARK_SERVICE - {} {}", message, o);
     }
 }
