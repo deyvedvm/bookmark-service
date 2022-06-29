@@ -1,5 +1,6 @@
 package dev.deyve.bookmarkservice.services;
 
+import dev.deyve.bookmarkservice.dtos.BookmarkDTO;
 import dev.deyve.bookmarkservice.dtos.TabsDTO;
 import dev.deyve.bookmarkservice.exceptions.BookmarkNotFoundException;
 import dev.deyve.bookmarkservice.exceptions.BusinessException;
@@ -23,6 +24,8 @@ import java.util.Optional;
 public class BookmarkService {
 
     private static final Logger logger = LogManager.getLogger(BookmarkService.class);
+
+    private final String BOOKMARK_NOT_FOUND = "Bookmark Not Found!";
 
     private final BookmarkRepository bookmarkRepository;
 
@@ -48,7 +51,7 @@ public class BookmarkService {
 
         try {
             List<Bookmark> bookmarksSaved = bookmarkRepository.saveAll(bookmarks);
-            logInfo("Tabs saved!", bookmarksSaved);
+            logInfo("BOOKMARK_SERVICE - Tabs saved!", bookmarksSaved);
         } catch (Exception e) {
             logger.error("BOOKMARK_SERVICE - Error: {}", e.getMessage());
             throw new BusinessException(e.getMessage());
@@ -64,7 +67,7 @@ public class BookmarkService {
 
         List<Bookmark> bookmarks = bookmarkRepository.findAll();
 
-        logInfo("Bookmarks founded!", bookmarks);
+        logInfo("BOOKMARK_SERVICE - Bookmarks founded!", bookmarks);
 
         return bookmarks;
     }
@@ -79,7 +82,7 @@ public class BookmarkService {
 
         Page<Bookmark> bookmarks = bookmarkRepository.findAll(pageable);
 
-        logInfo("Bookmarks founded!", bookmarks);
+        logInfo("BOOKMARK_SERVICE - Bookmarks founded!", bookmarks);
 
         return bookmarks;
     }
@@ -96,11 +99,38 @@ public class BookmarkService {
         Optional<Bookmark> optionalBookmark = bookmarkRepository.findById(id);
 
         if (optionalBookmark.isPresent()) {
-            logInfo("Bookmark founded!", optionalBookmark.get());
+            logInfo("BOOKMARK_SERVICE - Bookmark founded!", optionalBookmark.get());
             return optionalBookmark.get();
         } else {
-            throw new BookmarkNotFoundException("Bookmark Not Found!");
+            throw new BookmarkNotFoundException(BOOKMARK_NOT_FOUND);
         }
+    }
+
+    /**
+     * Update Bookmark
+     *
+     * @param id          String
+     * @param bookmarkDTO {@link BookmarkDTO}
+     * @return Bookmark
+     */
+    public Bookmark updateBookmark(String id, BookmarkDTO bookmarkDTO) {
+        Bookmark bookmark = Bookmark.builder()
+                .id(bookmarkDTO.getId())
+                .title(bookmarkDTO.getTitle())
+                .url(bookmarkDTO.getUrl())
+                .favIconUrl(bookmarkDTO.getFavIconUrl())
+                .build();
+
+        Optional<Bookmark> optionalBookmark = bookmarkRepository.findById(id);
+
+        Bookmark bookmarkSaved;
+        if (optionalBookmark.isPresent()) {
+            bookmarkSaved = bookmarkRepository.save(bookmark);
+            logInfo("BOOKMARK_SERVICE - Bookmark updated!", bookmarkSaved);
+        } else {
+            throw new BookmarkNotFoundException(BOOKMARK_NOT_FOUND);
+        }
+        return bookmarkSaved;
     }
 
     /**
@@ -116,9 +146,9 @@ public class BookmarkService {
 
         if (optionalBookmark.isPresent()) {
             bookmarkRepository.deleteById(id);
-            logInfo("Bookmark deleted!", optionalBookmark.get());
+            logInfo("BOOKMARK_SERVICE - Bookmark deleted!", optionalBookmark.get());
         } else {
-            throw new BookmarkNotFoundException("Bookmark Not Found!");
+            throw new BookmarkNotFoundException(BOOKMARK_NOT_FOUND);
         }
     }
 

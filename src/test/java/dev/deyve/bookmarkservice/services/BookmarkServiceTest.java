@@ -2,7 +2,6 @@ package dev.deyve.bookmarkservice.services;
 
 import dev.deyve.bookmarkservice.dtos.BookmarkDTO;
 import dev.deyve.bookmarkservice.dtos.TabsDTO;
-import dev.deyve.bookmarkservice.exceptions.BookmarkNotFoundException;
 import dev.deyve.bookmarkservice.exceptions.BusinessException;
 import dev.deyve.bookmarkservice.models.Bookmark;
 import dev.deyve.bookmarkservice.repositories.BookmarkRepository;
@@ -128,11 +127,51 @@ class BookmarkServiceTest {
     @Test
     @DisplayName("Should throw BookmarkNotFoundException when find a bookmark by Id")
     void shouldThrowBookmarkNotFoundExceptionWhenFindBookmarkById() {
-        when(bookmarkRepository.findById(idFail)).thenThrow(new BookmarkNotFoundException("Bookmark Not Found"));
+        when(bookmarkRepository.findById(idFail)).thenReturn(Optional.ofNullable(any()));
 
-        Exception exception = assertThrows(BookmarkNotFoundException.class, () -> bookmarkService.findBookmark(idFail));
+        try {
+            bookmarkService.findBookmark(idFail);
+        } catch (Exception e) {
+            assertEquals("Bookmark Not Found!", e.getMessage());
+        }
+    }
 
-        assertEquals("Bookmark Not Found", exception.getMessage());
+    @Test
+    @DisplayName("Should update a bookmark by Id")
+    void shouldUpdateBookmarkById() {
+        when(bookmarkRepository.findById(id)).thenReturn(Optional.ofNullable(bookmark));
+
+        Bookmark bookmarkUpdated = Bookmark.builder()
+                .id(id)
+                .title("Clone to try a simple Electron app")
+                .url(bookmark.getUrl())
+                .favIconUrl(bookmark.getFavIconUrl())
+                .build();
+
+        when(bookmarkRepository.save(any())).thenReturn(bookmarkUpdated);
+
+        BookmarkDTO bookmarkDTO = BookmarkDTO.builder()
+                .id(id)
+                .title("Clone to try a simple Electron app")
+                .url(bookmark.getUrl())
+                .favIconUrl(bookmark.getFavIconUrl())
+                .build();
+
+        Bookmark bookmarkSaved = bookmarkService.updateBookmark(id, bookmarkDTO);
+
+        assertEquals("Clone to try a simple Electron app", bookmarkSaved.getTitle());
+    }
+
+    @Test
+    @DisplayName("Should throw BookmarkNotFoundException when update a bookmark by Id")
+    void shouldThrowBookmarkNotFoundExceptionWhenUpdateBookmarkById() {
+        when(bookmarkRepository.findById(idFail)).thenReturn(Optional.ofNullable(any()));
+
+        try {
+            bookmarkService.updateBookmark(idFail, BookmarkDTO.builder().build());
+        } catch (Exception e) {
+            assertEquals("Bookmark Not Found!", e.getMessage());
+        }
     }
 
 
