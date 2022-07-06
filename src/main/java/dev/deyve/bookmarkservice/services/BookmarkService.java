@@ -38,6 +38,7 @@ public class BookmarkService {
      * Save Tabs
      *
      * @param tabsDTO TabsDTO
+     * @throws BusinessException Business Exception
      */
     public void saveTabs(TabsDTO tabsDTO) {
 
@@ -88,6 +89,8 @@ public class BookmarkService {
     }
 
     /**
+     * Find Bookmark by ID
+     *
      * @param id String
      * @return Bookmark
      * @throws BookmarkNotFoundException Bookmark Not Found Exception
@@ -112,6 +115,7 @@ public class BookmarkService {
      * @param id          String
      * @param bookmarkDTO {@link BookmarkDTO}
      * @return Bookmark
+     * @throws BookmarkNotFoundException Bookmark Not Found Exception
      */
     public Bookmark updateBookmark(String id, BookmarkDTO bookmarkDTO) {
         Bookmark bookmark = Bookmark.builder()
@@ -137,6 +141,7 @@ public class BookmarkService {
      * Delete Bookmark by Id
      *
      * @param id String
+     * @throws BookmarkNotFoundException Bookmark Not Found Exception
      */
     public void deleteBookmark(String id) {
 
