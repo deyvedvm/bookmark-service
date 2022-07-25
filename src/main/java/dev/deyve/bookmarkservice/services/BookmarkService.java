@@ -6,9 +6,9 @@ import dev.deyve.bookmarkservice.exceptions.BookmarkNotFoundException;
 import dev.deyve.bookmarkservice.exceptions.BusinessException;
 import dev.deyve.bookmarkservice.models.Bookmark;
 import dev.deyve.bookmarkservice.repositories.BookmarkRepository;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,6 +21,7 @@ import java.util.Optional;
  * Bookmark Service
  */
 @Service
+@RequiredArgsConstructor
 public class BookmarkService {
 
     private static final Logger logger = LogManager.getLogger(BookmarkService.class);
@@ -28,11 +29,6 @@ public class BookmarkService {
     private final String BOOKMARK_NOT_FOUND = "Bookmark Not Found!";
 
     private final BookmarkRepository bookmarkRepository;
-
-    @Autowired
-    public BookmarkService(BookmarkRepository bookmarkRepository) {
-        this.bookmarkRepository = bookmarkRepository;
-    }
 
     /**
      * Save Tabs

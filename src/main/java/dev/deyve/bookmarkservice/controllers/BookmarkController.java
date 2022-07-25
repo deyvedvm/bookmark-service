@@ -4,9 +4,10 @@ import dev.deyve.bookmarkservice.dtos.BookmarkDTO;
 import dev.deyve.bookmarkservice.dtos.TabsDTO;
 import dev.deyve.bookmarkservice.models.Bookmark;
 import dev.deyve.bookmarkservice.services.BookmarkService;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -22,16 +23,12 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/bookmarks")
+@RequiredArgsConstructor
 public class BookmarkController {
 
     private static final Logger logger = LogManager.getLogger(BookmarkController.class);
 
     private final BookmarkService bookmarkService;
-
-    @Autowired
-    public BookmarkController(BookmarkService bookmarkService) {
-        this.bookmarkService = bookmarkService;
-    }
 
     /**
      * Post Tabs
@@ -76,7 +73,11 @@ public class BookmarkController {
 
         Bookmark bookmark = bookmarkService.findBookmark(id);
 
-        return ResponseEntity.ok().body(mapToBookmarkDTO(bookmark));
+        BookmarkDTO bookmarkDTO = BookmarkDTO.builder().build();
+
+        BeanUtils.copyProperties(bookmark, bookmarkDTO);
+
+        return ResponseEntity.ok().body(bookmarkDTO);
     }
 
     /**
@@ -90,7 +91,11 @@ public class BookmarkController {
 
         Bookmark bookmark = bookmarkService.updateBookmark(id, bookmarkDTO);
 
-        return ResponseEntity.ok().body(mapToBookmarkDTO(bookmark));
+        BookmarkDTO bookmarkUpdatedDTO = BookmarkDTO.builder().build();
+
+        BeanUtils.copyProperties(bookmark, bookmarkUpdatedDTO);
+
+        return ResponseEntity.ok().body(bookmarkUpdatedDTO);
     }
 
     /**
@@ -105,15 +110,6 @@ public class BookmarkController {
         bookmarkService.deleteBookmark(id);
 
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    private BookmarkDTO mapToBookmarkDTO(Bookmark bookmark) {
-        return BookmarkDTO.builder()
-                .id(bookmark.getId())
-                .title(bookmark.getTitle())
-                .url(bookmark.getUrl())
-                .favIconUrl(bookmark.getFavIconUrl())
-                .build();
     }
 
     private List<BookmarkDTO> mapToBookmarkDTOS(Page<Bookmark> bookmarks) {
