@@ -4,9 +4,9 @@ import dev.deyve.bookmarkservice.dtos.BookmarkDTO;
 import dev.deyve.bookmarkservice.dtos.TabsDTO;
 import dev.deyve.bookmarkservice.exceptions.BookmarkNotFoundException;
 import dev.deyve.bookmarkservice.exceptions.BusinessException;
+import dev.deyve.bookmarkservice.mappers.BookmarkMapper;
 import dev.deyve.bookmarkservice.models.Bookmark;
 import dev.deyve.bookmarkservice.repositories.BookmarkRepository;
-import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Page;
@@ -17,11 +17,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
+
 /**
  * Bookmark Service
  */
 @Service
-@RequiredArgsConstructor
 public class BookmarkService {
 
     private static final Logger logger = LogManager.getLogger(BookmarkService.class);
@@ -29,6 +30,12 @@ public class BookmarkService {
     private final String BOOKMARK_NOT_FOUND = "Bookmark Not Found!";
 
     private final BookmarkRepository bookmarkRepository;
+    private final BookmarkMapper bookmarkMapper;
+
+    public BookmarkService(BookmarkRepository bookmarkRepository, BookmarkMapper bookmarkMapper) {
+        this.bookmarkRepository = bookmarkRepository;
+        this.bookmarkMapper = bookmarkMapper;
+    }
 
     /**
      * Save Tabs
@@ -39,16 +46,11 @@ public class BookmarkService {
     public void saveTabs(TabsDTO tabsDTO) {
 
         List<Bookmark> bookmarks = Arrays.stream(tabsDTO.getTabs())
-                .map(tab -> Bookmark.builder()
-                        .title(tab.getTitle())
-                        .favIconUrl(tab.getFavIconUrl())
-                        .url(tab.getUrl())
-                        .build()
-                ).toList();
+                .map(bookmarkMapper::toEntity)
+                .collect(toList());
 
         try {
-            List<Bookmark> bookmarksSaved = bookmarkRepository.saveAll(bookmarks);
-            logInfo("BOOKMARK_SERVICE - Tabs saved!", bookmarksSaved);
+            bookmarkRepository.saveAll(bookmarks);
         } catch (Exception e) {
             logger.error("BOOKMARK_SERVICE - Error: {}", e.getMessage());
             throw new BusinessException(e.getMessage());
@@ -75,13 +77,20 @@ public class BookmarkService {
      * @param pageable Pageable
      * @return Page of Bookmark
      */
-    public Page<Bookmark> findBookmarks(Pageable pageable) {
+    public Page<BookmarkDTO> findBookmarks(Pageable pageable) {
 
         Page<Bookmark> bookmarks = bookmarkRepository.findAll(pageable);
 
-        logInfo("BOOKMARK_SERVICE - Bookmarks founded!", bookmarks);
+        Page<BookmarkDTO> bookmarkDTOS = bookmarks.map(bookmark -> BookmarkDTO.builder()
+                .id(bookmark.getId())
+                .title(bookmark.getTitle())
+                .url(bookmark.getUrl())
+                .favIconUrl(bookmark.getFavIconUrl())
+                .build());
 
-        return bookmarks;
+        logInfo("BOOKMARK_SERVICE - Bookmarks founded!", bookmarkDTOS);
+
+        return bookmarkDTOS;
     }
 
     /**
@@ -91,15 +100,13 @@ public class BookmarkService {
      * @return Bookmark
      * @throws BookmarkNotFoundException Bookmark Not Found Exception
      */
-    public Bookmark findBookmark(String id) {
-
-        logger.info("BOOKMARK_SERVICE - Find bookmark by Id: {} ", id);
+    public BookmarkDTO findBookmark(String id) {
 
         Optional<Bookmark> optionalBookmark = bookmarkRepository.findById(id);
 
         if (optionalBookmark.isPresent()) {
             logInfo("BOOKMARK_SERVICE - Bookmark founded!", optionalBookmark.get());
-            return optionalBookmark.get();
+            return bookmarkMapper.toDTO(optionalBookmark.get());
         } else {
             throw new BookmarkNotFoundException(BOOKMARK_NOT_FOUND);
         }
@@ -113,24 +120,16 @@ public class BookmarkService {
      * @return Bookmark
      * @throws BookmarkNotFoundException Bookmark Not Found Exception
      */
-    public Bookmark updateBookmark(String id, BookmarkDTO bookmarkDTO) {
-        Bookmark bookmark = Bookmark.builder()
-                .id(bookmarkDTO.getId())
-                .title(bookmarkDTO.getTitle())
-                .url(bookmarkDTO.getUrl())
-                .favIconUrl(bookmarkDTO.getFavIconUrl())
-                .build();
-
+    public BookmarkDTO updateBookmark(String id, BookmarkDTO bookmarkDTO) {
         Optional<Bookmark> optionalBookmark = bookmarkRepository.findById(id);
 
-        Bookmark bookmarkSaved;
         if (optionalBookmark.isPresent()) {
-            bookmarkSaved = bookmarkRepository.save(bookmark);
-            logInfo("BOOKMARK_SERVICE - Bookmark updated!", bookmarkSaved);
+            Bookmark bookmark = bookmarkMapper.toEntity(bookmarkDTO);
+
+            return bookmarkMapper.toDTO(bookmarkRepository.save(bookmark));
         } else {
             throw new BookmarkNotFoundException(BOOKMARK_NOT_FOUND);
         }
-        return bookmarkSaved;
     }
 
     /**

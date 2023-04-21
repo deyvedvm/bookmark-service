@@ -2,33 +2,30 @@ package dev.deyve.bookmarkservice.controllers;
 
 import dev.deyve.bookmarkservice.dtos.BookmarkDTO;
 import dev.deyve.bookmarkservice.dtos.TabsDTO;
-import dev.deyve.bookmarkservice.models.Bookmark;
 import dev.deyve.bookmarkservice.services.BookmarkService;
-import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Bookmark Controller
  */
 @RestController
 @RequestMapping("/api/bookmarks")
-@RequiredArgsConstructor
 public class BookmarkController {
 
     private static final Logger logger = LogManager.getLogger(BookmarkController.class);
 
     private final BookmarkService bookmarkService;
+
+    public BookmarkController(BookmarkService bookmarkService) {
+        this.bookmarkService = bookmarkService;
+    }
 
     /**
      * Post Tabs
@@ -39,9 +36,16 @@ public class BookmarkController {
     @RequestMapping("/tabs")
     public ResponseEntity<Void> postTabs(@RequestBody TabsDTO tabsDTO) {
 
-        bookmarkService.saveTabs(tabsDTO);
+        logger.info("BOOKMARK_SERVICE - Saving tabs");
 
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        try {
+            bookmarkService.saveTabs(tabsDTO);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } catch (Exception e) {
+            // TODO - Create a custom exception
+            logger.error("BOOKMARK_SERVICE - Error: {}", e.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     /**
@@ -50,16 +54,15 @@ public class BookmarkController {
      * @return List<BookmarkDTO> List of Bookmarks
      */
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getBookmarks(@RequestParam(defaultValue = "0") int page,
-                                                            @RequestParam(defaultValue = "5") int size) {
+    public ResponseEntity<Page<BookmarkDTO>> getBookmarks(@RequestParam(defaultValue = "0") int page,
+                                                          @RequestParam(defaultValue = "5") int size,
+                                                          @RequestParam(defaultValue = "id") String sort) {
 
-        logger.info("BOOKMARK_SERVICE - Find bookmarks by page: {} and size: {}", page, size);
+        logger.info("BOOKMARK_SERVICE - Finding bookmarks by page {}, size {} and sort {}", page, size, sort);
 
-        Page<Bookmark> bookmarks = bookmarkService.findBookmarks(PageRequest.of(page, size));
+        Page<BookmarkDTO> bookmarkDTOS = bookmarkService.findBookmarks(PageRequest.of(page, size, Sort.by(sort)));
 
-        List<BookmarkDTO> bookmarkDTOS = mapToBookmarkDTOS(bookmarks);
-
-        return ResponseEntity.ok().body(getResponseMap(bookmarks, bookmarkDTOS));
+        return ResponseEntity.ok().body(bookmarkDTOS);
     }
 
     /**
@@ -71,11 +74,9 @@ public class BookmarkController {
     @GetMapping("/{id}")
     public ResponseEntity<BookmarkDTO> getBookmark(@PathVariable String id) {
 
-        Bookmark bookmark = bookmarkService.findBookmark(id);
+        logger.info("BOOKMARK_SERVICE - Finding bookmark by Id: {} ", id);
 
-        BookmarkDTO bookmarkDTO = BookmarkDTO.builder().build();
-
-        BeanUtils.copyProperties(bookmark, bookmarkDTO);
+        BookmarkDTO bookmarkDTO = bookmarkService.findBookmark(id);
 
         return ResponseEntity.ok().body(bookmarkDTO);
     }
@@ -89,11 +90,9 @@ public class BookmarkController {
     @PutMapping("/{id}")
     public ResponseEntity<BookmarkDTO> putBookmark(@RequestBody BookmarkDTO bookmarkDTO, @PathVariable String id) {
 
-        Bookmark bookmark = bookmarkService.updateBookmark(id, bookmarkDTO);
+        logger.info("BOOKMARK_SERVICE - Updating bookmark by Id: {} ", id);
 
-        BookmarkDTO bookmarkUpdatedDTO = BookmarkDTO.builder().build();
-
-        BeanUtils.copyProperties(bookmark, bookmarkUpdatedDTO);
+        BookmarkDTO bookmarkUpdatedDTO = bookmarkService.updateBookmark(id, bookmarkDTO);
 
         return ResponseEntity.ok().body(bookmarkUpdatedDTO);
     }
@@ -107,31 +106,11 @@ public class BookmarkController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBookmark(@PathVariable String id) {
 
+        logger.info("BOOKMARK_SERVICE - Deleting bookmark by Id: {} ", id);
+
         bookmarkService.deleteBookmark(id);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    private List<BookmarkDTO> mapToBookmarkDTOS(Page<Bookmark> bookmarks) {
-        return bookmarks.stream()
-                .map(bookmark -> BookmarkDTO.builder()
-                        .id(bookmark.getId())
-                        .title(bookmark.getTitle())
-                        .favIconUrl(bookmark.getFavIconUrl())
-                        .url(bookmark.getUrl())
-                        .build())
-                .toList();
-    }
-
-    private Map<String, Object> getResponseMap(Page<Bookmark> bookmarks, List<BookmarkDTO> bookmarkDTOS) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("content", bookmarkDTOS);
-        response.put("currentPage", bookmarks.getNumber());
-        response.put("hasNext", bookmarks.hasNext());
-        response.put("hasPrevious", bookmarks.hasPrevious());
-        response.put("totalElements", bookmarks.getTotalElements());
-        response.put("totalPages", bookmarks.getTotalPages());
-        response.put("size", bookmarks.getSize());
-        return response;
-    }
 }
