@@ -38,14 +38,9 @@ public class BookmarkController {
 
         logger.info("BOOKMARK_SERVICE - Saving tabs");
 
-        try {
-            bookmarkService.saveTabs(tabsDTO);
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        } catch (Exception e) {
-            // TODO - Create a custom exception
-            logger.error("BOOKMARK_SERVICE - Error: {}", e.getMessage());
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        bookmarkService.saveTabs(tabsDTO);
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     /**
@@ -60,9 +55,7 @@ public class BookmarkController {
 
         logger.info("BOOKMARK_SERVICE - Finding bookmarks by page {}, size {} and sort {}", page, size, sort);
 
-        Page<BookmarkDTO> bookmarkDTOS = bookmarkService.findBookmarks(PageRequest.of(page, size, Sort.by(sort)));
-
-        return ResponseEntity.ok().body(bookmarkDTOS);
+        return ResponseEntity.ok().body(bookmarkService.findBookmarks(PageRequest.of(page, size, Sort.by(sort))));
     }
 
     /**
@@ -76,9 +69,7 @@ public class BookmarkController {
 
         logger.info("BOOKMARK_SERVICE - Finding bookmark by Id: {} ", id);
 
-        BookmarkDTO bookmarkDTO = bookmarkService.findBookmark(id);
-
-        return ResponseEntity.ok().body(bookmarkDTO);
+        return ResponseEntity.ok().body(bookmarkService.findBookmark(id));
     }
 
     /**
@@ -92,9 +83,7 @@ public class BookmarkController {
 
         logger.info("BOOKMARK_SERVICE - Updating bookmark by Id: {} ", id);
 
-        BookmarkDTO bookmarkUpdatedDTO = bookmarkService.updateBookmark(id, bookmarkDTO);
-
-        return ResponseEntity.ok().body(bookmarkUpdatedDTO);
+        return ResponseEntity.ok().body(bookmarkService.updateBookmark(id, bookmarkDTO));
     }
 
     /**

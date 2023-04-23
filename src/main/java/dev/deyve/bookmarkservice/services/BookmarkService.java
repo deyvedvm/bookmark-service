@@ -15,9 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * Bookmark Service
@@ -47,11 +44,11 @@ public class BookmarkService {
 
         List<Bookmark> bookmarks = Arrays.stream(tabsDTO.getTabs())
                 .map(bookmarkMapper::toEntity)
-                .collect(toList());
+                .toList();
 
         try {
             bookmarkRepository.saveAll(bookmarks);
-        } catch (Exception e) {
+        } catch (BusinessException e) {
             logger.error("BOOKMARK_SERVICE - Error: {}", e.getMessage());
             throw new BusinessException(e.getMessage());
         }
@@ -62,13 +59,19 @@ public class BookmarkService {
      *
      * @return List of Bookmark
      */
-    public List<Bookmark> findBookmarks() {
+    public List<BookmarkDTO> findBookmarks() {
 
-        List<Bookmark> bookmarks = bookmarkRepository.findAll();
+        try {
+            List<Bookmark> bookmarkList = bookmarkRepository.findAll();
 
-        logInfo("BOOKMARK_SERVICE - Bookmarks founded!", bookmarks);
+            return bookmarkList.stream()
+                    .map(bookmarkMapper::toDTO)
+                    .toList();
 
-        return bookmarks;
+        } catch (BusinessException e) {
+            logger.error("BOOKMARK_SERVICE - Error: {}", e.getMessage());
+            throw new BusinessException(e.getMessage());
+        }
     }
 
     /**
@@ -79,18 +82,14 @@ public class BookmarkService {
      */
     public Page<BookmarkDTO> findBookmarks(Pageable pageable) {
 
-        Page<Bookmark> bookmarks = bookmarkRepository.findAll(pageable);
+        try {
+            Page<Bookmark> bookmarkPage = bookmarkRepository.findAll(pageable);
 
-        Page<BookmarkDTO> bookmarkDTOS = bookmarks.map(bookmark -> BookmarkDTO.builder()
-                .id(bookmark.getId())
-                .title(bookmark.getTitle())
-                .url(bookmark.getUrl())
-                .favIconUrl(bookmark.getFavIconUrl())
-                .build());
-
-        logInfo("BOOKMARK_SERVICE - Bookmarks founded!", bookmarkDTOS);
-
-        return bookmarkDTOS;
+            return bookmarkPage.map(bookmarkMapper::toDTO);
+        } catch (BusinessException e) {
+            logger.error("BOOKMARK_SERVICE - Error: {}", e.getMessage());
+            throw new BusinessException(e.getMessage());
+        }
     }
 
     /**
@@ -102,14 +101,10 @@ public class BookmarkService {
      */
     public BookmarkDTO findBookmark(String id) {
 
-        Optional<Bookmark> optionalBookmark = bookmarkRepository.findById(id);
+        Bookmark optionalBookmark = bookmarkRepository.findById(id)
+                .orElseThrow(() -> new BookmarkNotFoundException(BOOKMARK_NOT_FOUND));
 
-        if (optionalBookmark.isPresent()) {
-            logInfo("BOOKMARK_SERVICE - Bookmark founded!", optionalBookmark.get());
-            return bookmarkMapper.toDTO(optionalBookmark.get());
-        } else {
-            throw new BookmarkNotFoundException(BOOKMARK_NOT_FOUND);
-        }
+        return bookmarkMapper.toDTO(optionalBookmark);
     }
 
     /**
@@ -121,15 +116,11 @@ public class BookmarkService {
      * @throws BookmarkNotFoundException Bookmark Not Found Exception
      */
     public BookmarkDTO updateBookmark(String id, BookmarkDTO bookmarkDTO) {
-        Optional<Bookmark> optionalBookmark = bookmarkRepository.findById(id);
+        bookmarkRepository.findById(id).orElseThrow(() -> new BookmarkNotFoundException(BOOKMARK_NOT_FOUND));
 
-        if (optionalBookmark.isPresent()) {
-            Bookmark bookmark = bookmarkMapper.toEntity(bookmarkDTO);
+        Bookmark bookmark = bookmarkMapper.toEntity(bookmarkDTO);
 
-            return bookmarkMapper.toDTO(bookmarkRepository.save(bookmark));
-        } else {
-            throw new BookmarkNotFoundException(BOOKMARK_NOT_FOUND);
-        }
+        return bookmarkMapper.toDTO(bookmarkRepository.save(bookmark));
     }
 
     /**
@@ -140,20 +131,9 @@ public class BookmarkService {
      */
     public void deleteBookmark(String id) {
 
-        logger.info("BOOKMARK_SERVICE - Delete bookmark by Id: {} ", id);
+        bookmarkRepository.findById(id).orElseThrow(() -> new BookmarkNotFoundException(BOOKMARK_NOT_FOUND));
 
-        Optional<Bookmark> optionalBookmark = bookmarkRepository.findById(id);
-
-        if (optionalBookmark.isPresent()) {
-            bookmarkRepository.deleteById(id);
-            logInfo("BOOKMARK_SERVICE - Bookmark deleted!", optionalBookmark.get());
-        } else {
-            throw new BookmarkNotFoundException(BOOKMARK_NOT_FOUND);
-        }
+        bookmarkRepository.deleteById(id);
     }
 
-    private void logInfo(String message, Object o) {
-        logger.info("BOOKMARK_SERVICE - {}", message);
-        logger.debug("BOOKMARK_SERVICE - {} {}", message, o);
-    }
 }
