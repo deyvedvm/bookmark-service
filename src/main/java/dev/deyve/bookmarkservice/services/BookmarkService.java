@@ -20,7 +20,7 @@ import java.util.List;
  * Bookmark Service
  */
 @Service
-public class BookmarkService {
+public class BookmarkService implements IBookmarkService {
 
     private static final Logger logger = LogManager.getLogger(BookmarkService.class);
 
@@ -40,6 +40,7 @@ public class BookmarkService {
      * @param tabsDTO TabsDTO
      * @throws BusinessException Business Exception
      */
+    @Override
     public void saveTabs(TabsDTO tabsDTO) {
 
         List<Bookmark> bookmarks = Arrays.stream(tabsDTO.getTabs())
@@ -55,31 +56,12 @@ public class BookmarkService {
     }
 
     /**
-     * Find Bookmarks
-     *
-     * @return List of Bookmark
-     */
-    public List<BookmarkDTO> findBookmarks() {
-
-        try {
-            List<Bookmark> bookmarkList = bookmarkRepository.findAll();
-
-            return bookmarkList.stream()
-                    .map(bookmarkMapper::toDTO)
-                    .toList();
-
-        } catch (BusinessException e) {
-            logger.error("BOOKMARK_SERVICE - Error: {}", e.getMessage());
-            throw new BusinessException(e.getMessage());
-        }
-    }
-
-    /**
      * Find Bookmarks with Pageable
      *
      * @param pageable Pageable
      * @return Page of Bookmark
      */
+    @Override
     public Page<BookmarkDTO> findBookmarks(Pageable pageable) {
 
         try {
@@ -99,6 +81,7 @@ public class BookmarkService {
      * @return Bookmark
      * @throws BookmarkNotFoundException Bookmark Not Found Exception
      */
+    @Override
     public BookmarkDTO findBookmark(String id) {
 
         Bookmark optionalBookmark = bookmarkRepository.findById(id)
@@ -115,6 +98,7 @@ public class BookmarkService {
      * @return Bookmark
      * @throws BookmarkNotFoundException Bookmark Not Found Exception
      */
+    @Override
     public BookmarkDTO updateBookmark(String id, BookmarkDTO bookmarkDTO) {
         bookmarkRepository.findById(id).orElseThrow(() -> new BookmarkNotFoundException(BOOKMARK_NOT_FOUND));
 
@@ -129,6 +113,7 @@ public class BookmarkService {
      * @param id String
      * @throws BookmarkNotFoundException Bookmark Not Found Exception
      */
+    @Override
     public void deleteBookmark(String id) {
 
         bookmarkRepository.findById(id).orElseThrow(() -> new BookmarkNotFoundException(BOOKMARK_NOT_FOUND));
