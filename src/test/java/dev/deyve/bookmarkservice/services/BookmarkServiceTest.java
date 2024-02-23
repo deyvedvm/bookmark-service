@@ -21,11 +21,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static dev.deyve.bookmarkservice.dummies.BookmarkDummy.buildBookmark;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Bookmark Service Test")
 class BookmarkServiceTest {
 
     @Mock
@@ -48,12 +50,7 @@ class BookmarkServiceTest {
     @Test
     @DisplayName("Should save tabs from json file")
     void shouldSaveTabsFromJson() {
-        Bookmark bookmarkMock = Bookmark.builder()
-                .id(id)
-                .favIconUrl("https://github.githubassets.com/favicons/favicon.svg")
-                .title("electron/electron-quick-start: Clone to try a simple Electron app")
-                .url("https://github.com/electron/electron-quick-start")
-                .build();
+        Bookmark bookmarkMock = buildBookmark().build();
 
         List<Bookmark> bookmarkList = List.of(bookmarkMock, Bookmark.builder()
                 .id("6287d353bfdfbf082b76187f")
