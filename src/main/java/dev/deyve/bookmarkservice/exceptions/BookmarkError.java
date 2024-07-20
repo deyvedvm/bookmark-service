@@ -2,8 +2,8 @@ package dev.deyve.bookmarkservice.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
-public record BookmarkError(String message, HttpStatus httpStatus, LocalDateTime localDateTime) {
+public record BookmarkError(String message, HttpStatus httpStatus, ZonedDateTime zonedDateTime) {
 
 }

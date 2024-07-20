@@ -5,8 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @ControllerAdvice
 public class BookmarkExceptionHandler {
@@ -19,7 +19,7 @@ public class BookmarkExceptionHandler {
         BookmarkError bookmarkError = new BookmarkError(
                 notFoundException.getMessage(),
                 badRequest,
-                LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))
+                ZonedDateTime.now(ZoneId.of("Z"))
         );
 
         return new ResponseEntity<>(bookmarkError, badRequest);
