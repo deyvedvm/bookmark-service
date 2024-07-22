@@ -1,13 +1,22 @@
 package dev.deyve.bookmarkservice.dtos;
 
-import lombok.*;
-
-@Getter
-@Builder
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
 public class TabsDTO {
 
-    BookmarkDTO[] tabs;
+    private BookmarkDTO[] tabs;
+
+    public TabsDTO() {
+    }
+
+    public TabsDTO(BookmarkDTO[] tabs) {
+        this.tabs = tabs;
+    }
+
+    public BookmarkDTO[] getTabs() {
+        return tabs;
+    }
+
+    public void setTabs(BookmarkDTO[] tabs) {
+        this.tabs = tabs;
+    }
+
 }

@@ -2,6 +2,7 @@ package dev.deyve.bookmarkservice.services;
 
 import dev.deyve.bookmarkservice.dtos.BookmarkDTO;
 import dev.deyve.bookmarkservice.dtos.TabsDTO;
+import dev.deyve.bookmarkservice.exceptions.BookmarkNotFoundException;
 import dev.deyve.bookmarkservice.exceptions.BusinessException;
 import dev.deyve.bookmarkservice.mappers.BookmarkMapper;
 import dev.deyve.bookmarkservice.models.Bookmark;
@@ -24,6 +25,7 @@ import java.util.UUID;
 import static dev.deyve.bookmarkservice.dummies.BookmarkDummy.buildBookmark;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,7 +42,6 @@ class BookmarkServiceTest {
     private BookmarkService bookmarkService;
 
     private final String id = "6287d353bfdfbf082b76187e";
-
     private final String idFail = "6287d353biff082b76187e";
 
     @BeforeEach
@@ -50,26 +51,24 @@ class BookmarkServiceTest {
     @Test
     @DisplayName("Should save tabs from json file")
     void shouldSaveTabsFromJson() {
-        Bookmark bookmarkMock = buildBookmark().build();
+        Bookmark bookmarkMock = buildBookmark(null, null, null, null);
 
-        List<Bookmark> bookmarkList = List.of(bookmarkMock, Bookmark.builder()
-                .id("6287d353bfdfbf082b76187f")
-                .favIconUrl("https://www.youtube.com/s/desktop/2b1b3e1c/img/favicon_32.png")
-                .title("Electron Quick Start")
-                .url("https://www.youtube.com/watch?v=Qg0yYqjwNkI")
-                .build());
+        List<Bookmark> bookmarkList = List.of(bookmarkMock, buildBookmark(
+                "6287d353bfdfbf082b76187f",
+                "https://www.youtube.com/s/desktop/2b1b3e1c/img/favicon_32.png",
+                "Electron Quick Start",
+                "https://www.youtube.com/watch?v=Qg0yYqjwNkI"));
 
-        BookmarkDTO[] bookmarkArrayDTO = bookmarkList.stream().map(bookmark -> BookmarkDTO.builder()
-                .title(bookmark.getTitle())
-                .url(bookmark.getUrl())
-                .favIconUrl(bookmark.getFavIconUrl())
-                .build()).toList().toArray(new BookmarkDTO[0]);
+        BookmarkDTO[] bookmarkArrayDTO = bookmarkList.stream().map(bookmark -> new BookmarkDTO(
+                null,
+                bookmark.getFavIconUrl(),
+                bookmark.getTitle(),
+                bookmark.getUrl()
+        )).toArray(BookmarkDTO[]::new);
 
-        TabsDTO tabsDTO = TabsDTO.builder()
-                .tabs(bookmarkArrayDTO)
-                .build();
+        TabsDTO tabsDTO = new TabsDTO(bookmarkArrayDTO);
 
-        when(bookmarkRepository.saveAll(anyList())).thenReturn(anyList());
+        when(bookmarkRepository.saveAll(anyList())).thenReturn(bookmarkList);
 
         bookmarkService.saveTabs(tabsDTO);
 
@@ -79,31 +78,28 @@ class BookmarkServiceTest {
     @Test
     @DisplayName("Should throw BusinessException when save tabs")
     void shouldThrowBusinessExceptionWhenSaveTabs() {
-        Bookmark bookmarkMock = Bookmark.builder()
-                .id(id)
-                .favIconUrl("https://github.githubassets.com/favicons/favicon.svg")
-                .title("electron/electron-quick-start: Clone to try a simple Electron app")
-                .url("https://github.com/electron/electron-quick-start")
-                .build();
+        Bookmark bookmarkMock = buildBookmark(
+                id,
+                "https://github.githubassets.com/favicons/favicon.svg",
+                "electron/electron-quick-start: Clone to try a simple Electron app",
+                "https://github.com/electron/electron-quick-start"
+        );
 
-        List<Bookmark> bookmarkList = List.of(bookmarkMock, Bookmark.builder()
-                .id("6287d353bfdfbf082b76187f")
-                .favIconUrl("https://www.youtube.com/s/desktop/2b1b3e1c/img/favicon_32.png")
-                .title("Electron Quick Start")
-                .url("https://www.youtube.com/watch?v=Qg0yYqjwNkI")
-                .build());
+        List<Bookmark> bookmarkList = List.of(bookmarkMock, buildBookmark(
+                "6287d353bfdfbf082b76187f",
+                "https://www.youtube.com/s/desktop/2b1b3e1c/img/favicon_32.png",
+                "Electron Quick Start",
+                "https://www.youtube.com/watch?v=Qg0yYqjwNkI"
+        ));
 
-        BookmarkDTO[] bookmarkArrayDTO = bookmarkList.stream().map(bookmark -> {
-            return BookmarkDTO.builder()
-                    .title(bookmark.getTitle())
-                    .url(bookmark.getUrl())
-                    .favIconUrl(bookmark.getFavIconUrl())
-                    .build();
-        }).toList().toArray(new BookmarkDTO[0]);
+        BookmarkDTO[] bookmarkArrayDTO = bookmarkList.stream().map(bookmark -> new BookmarkDTO(
+                null,
+                bookmark.getFavIconUrl(),
+                bookmark.getTitle(),
+                bookmark.getUrl()
+        )).toArray(BookmarkDTO[]::new);
 
-        TabsDTO tabsDTO = TabsDTO.builder()
-                .tabs(bookmarkArrayDTO)
-                .build();
+        TabsDTO tabsDTO = new TabsDTO(bookmarkArrayDTO);
 
         when(bookmarkRepository.saveAll(anyList())).thenThrow(new BusinessException("Bookmark error when save tabs"));
 
@@ -115,19 +111,19 @@ class BookmarkServiceTest {
     @Test
     @DisplayName("Should find bookmarks then return page")
     void shouldFindBookmarks() {
-        Bookmark bookmarkMock = Bookmark.builder()
-                .id(id)
-                .favIconUrl("https://github.githubassets.com/favicons/favicon.svg")
-                .title("electron/electron-quick-start: Clone to try a simple Electron app")
-                .url("https://github.com/electron/electron-quick-start")
-                .build();
+        Bookmark bookmarkMock = buildBookmark(
+                id,
+                "https://github.githubassets.com/favicons/favicon.svg",
+                "electron/electron-quick-start: Clone to try a simple Electron app",
+                "https://github.com/electron/electron-quick-start"
+        );
 
-        List<Bookmark> bookmarkList = List.of(bookmarkMock, Bookmark.builder()
-                .id("6287d353bfdfbf082b76187f")
-                .favIconUrl("https://www.youtube.com/s/desktop/2b1b3e1c/img/favicon_32.png")
-                .title("Electron Quick Start")
-                .url("https://www.youtube.com/watch?v=Qg0yYqjwNkI")
-                .build());
+        List<Bookmark> bookmarkList = List.of(bookmarkMock, buildBookmark(
+                "6287d353bfdfbf082b76187f",
+                "https://www.youtube.com/s/desktop/2b1b3e1c/img/favicon_32.png",
+                "Electron Quick Start",
+                "https://www.youtube.com/watch?v=Qg0yYqjwNkI"
+        ));
 
         PageRequest pageRequest = PageRequest.of(0, 5);
         Page<Bookmark> bookmarkPageMock = new PageImpl<>(bookmarkList, pageRequest, 2);
@@ -143,37 +139,37 @@ class BookmarkServiceTest {
     @Test
     @DisplayName("Should find a bookmark by Id")
     void shouldFindBookmarkById() {
-        Bookmark bookmark = Bookmark.builder()
-                .id(id)
-                .title("electron/electron-quick-start: Clone to try a simple Electron app")
-                .build();
+        Bookmark bookmark = buildBookmark(
+                id,
+                null,
+                "electron/electron-quick-start: Clone to try a simple Electron app",
+                null
+        );
 
-        BookmarkDTO bookmarkDTO = BookmarkDTO.builder()
-                .id(id)
-                .title("electron/electron-quick-start: Clone to try a simple Electron app")
-                .build();
+        BookmarkDTO bookmarkDTO = new BookmarkDTO(
+                id,
+                null,
+                "electron/electron-quick-start: Clone to try a simple Electron app",
+                null
+        );
 
-        when(bookmarkRepository.findById(id)).thenReturn(Optional.ofNullable(bookmark));
+        when(bookmarkRepository.findById(id)).thenReturn(Optional.of(bookmark));
         when(bookmarkMapper.toDTO(bookmark)).thenReturn(bookmarkDTO);
-
-        when(bookmarkRepository.findById(id)).thenReturn(Optional.ofNullable(bookmark));
 
         BookmarkDTO bookmarkDTOFound = bookmarkService.findBookmark(id);
 
         assertEquals(id, bookmarkDTOFound.getId());
-        assertEquals("electron/electron-quick-start: Clone to try a simple Electron app", bookmarkDTO.getTitle());
+        assertEquals("electron/electron-quick-start: Clone to try a simple Electron app", bookmarkDTOFound.getTitle());
     }
 
     @Test
     @DisplayName("Should throw BookmarkNotFoundException when find a bookmark by Id")
     void shouldThrowBookmarkNotFoundExceptionWhenFindBookmarkById() {
-        when(bookmarkRepository.findById(idFail)).thenReturn(Optional.ofNullable(any()));
+        when(bookmarkRepository.findById(idFail)).thenReturn(Optional.empty());
 
-        try {
-            bookmarkService.findBookmark(idFail);
-        } catch (Exception e) {
-            assertEquals("Bookmark Not Found!", e.getMessage());
-        }
+        Exception exception = assertThrows(BookmarkNotFoundException.class, () -> bookmarkService.findBookmark(idFail));
+
+        assertEquals("Bookmark Not Found!", exception.getMessage());
     }
 
     @Test
@@ -181,52 +177,35 @@ class BookmarkServiceTest {
     void shouldUpdateBookmarkById() {
         String id = UUID.randomUUID().toString();
 
-        Bookmark bookmarkFound = Bookmark.builder()
-                .id(id)
-                .title("Title")
-                .build();
-
-        BookmarkDTO bookmarkDTO = BookmarkDTO.builder()
-                .id(id)
-                .build();
-
-        Bookmark bookmark = Bookmark.builder()
-                .id(id)
-                .title("Title")
-                .build();
-
-        Bookmark bookmarkUpdated = Bookmark.builder()
-                .id(id)
-                .title("Title updated")
-                .build();
+        Bookmark bookmarkFound = buildBookmark(id, null, "Title", null);
+        BookmarkDTO bookmarkDTO = new BookmarkDTO(id, null, "Title", null);
+        Bookmark bookmark = buildBookmark(id, null, "Title", null);
+        Bookmark bookmarkUpdated = buildBookmark(id, null, "Title updated", null);
 
         when(bookmarkRepository.findById(id)).thenReturn(Optional.of(bookmarkFound));
         when(bookmarkMapper.toEntity(bookmarkDTO)).thenReturn(bookmark);
         when(bookmarkRepository.save(bookmark)).thenReturn(bookmarkUpdated);
-        when(bookmarkMapper.toDTO(bookmarkUpdated)).thenReturn(new BookmarkDTO());
+        when(bookmarkMapper.toDTO(bookmarkUpdated)).thenReturn(new BookmarkDTO(id, null, "Title updated", null));
 
-        BookmarkDTO bookmarkDTO1 = bookmarkService.updateBookmark(id, bookmarkDTO);
+        BookmarkDTO updatedBookmarkDTO = bookmarkService.updateBookmark(id, bookmarkDTO);
 
-        assertEquals("Title updated", bookmarkUpdated.getTitle());
+        assertEquals("Title updated", updatedBookmarkDTO.getTitle());
     }
 
     @Test
     @DisplayName("Should throw BookmarkNotFoundException when update a bookmark by Id")
     void shouldThrowBookmarkNotFoundExceptionWhenUpdateBookmarkById() {
-        when(bookmarkRepository.findById(idFail)).thenReturn(Optional.ofNullable(any()));
+        when(bookmarkRepository.findById(idFail)).thenReturn(Optional.empty());
 
-        try {
-            bookmarkService.updateBookmark(idFail, BookmarkDTO.builder().build());
-        } catch (Exception e) {
-            assertEquals("Bookmark Not Found!", e.getMessage());
-        }
+        Exception exception = assertThrows(BookmarkNotFoundException.class, () -> bookmarkService.updateBookmark(idFail, new BookmarkDTO()));
+
+        assertEquals("Bookmark Not Found!", exception.getMessage());
     }
-
 
     @Test
     @DisplayName("Should delete a bookmark by Id")
     void shouldDeleteBookmarkById() {
-        when(bookmarkRepository.findById(id)).thenReturn(Optional.ofNullable(Bookmark.builder().build()));
+        when(bookmarkRepository.findById(id)).thenReturn(Optional.of(new Bookmark()));
 
         bookmarkService.deleteBookmark(id);
 
@@ -236,12 +215,10 @@ class BookmarkServiceTest {
     @Test
     @DisplayName("Should throw BookmarkNotFoundException when delete a bookmark by Id")
     void shouldThrowBookmarkNotFoundExceptionWhenDeleteBookmarkById() {
-        when(bookmarkRepository.findById(idFail)).thenReturn(Optional.ofNullable(any()));
+        when(bookmarkRepository.findById(idFail)).thenReturn(Optional.empty());
 
-        try {
-            bookmarkService.deleteBookmark(idFail);
-        } catch (Exception e) {
-            assertEquals("Bookmark Not Found!", e.getMessage());
-        }
+        Exception exception = assertThrows(BookmarkNotFoundException.class, () -> bookmarkService.deleteBookmark(idFail));
+
+        assertEquals("Bookmark Not Found!", exception.getMessage());
     }
 }
